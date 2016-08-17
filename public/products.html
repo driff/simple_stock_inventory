@@ -1,0 +1,54 @@
+<!doctype html>
+<html>
+  <head>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular.min.js"></script>
+    <script src="javascripts/productsApp.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="stylesheet/style.css">
+    <title>Materials</title>
+  </head>
+  <body ng-app="productsApp">
+    <div id ='main' class="container" ng-controller="mainController">
+      <div class="col-md-offset-2 col-md-8">
+        <div class="clearfix">
+          <form ng-submit="post()">
+            <input required type="text" class="form-control" placeholder="Product Name" ng-model="newProduct.name"/>
+            <input required type="number" class="form-control" placeholder="Product Quantity" ng-model="newProduct.quantity"/>
+            <input type="checkbox" checked class="form-control" placeholder="Is raw material" ng-model="newProduct.rawMaterial"></input>
+            <textarea class="form-control" maxlength="200" rows="3" placeholder="Product Info" ng-model="newProduct.info"></textarea>
+            <input class="button" class="btn submit-btn pull-right" type="submit" value="New Product!"/>
+          </form>
+
+          <div id="post-stream">
+            <h4>Products List</h4>
+              <div>
+                <!-- <p> {{post.created_by}} says {{post.text}} at {{post.created_at}} </p> -->
+                <table class="products-table">
+                  <thead>
+                    <tr>
+                      <th colspan="5" class="products-table-title">Products List</th>
+                    </tr>
+                    <tr>
+                      <th>Name</th>
+                      <th>Quantity</th>
+                      <th>Additional Info</th>
+                      <th>Last Updated</th>
+                      <th>Raw Material</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr ng-repeat="product in products | orderBy: 'lastUpdated'" ng-class-odd="'odd'" ng-class-even="'even'" ng-click="showAction(product);">
+                      <td class="product-name">{{product.name}}</td>
+                      <td class="product-quantity">{{product.quantity}}</td>
+                      <td>{{product.info}}</td>
+                      <td>{{product.rawMaterial}}</td>
+                      <td>{{product.lastUpdated | date:"h:mma 'on' MMM d, y"}}</td>
+                    </tr>
+                  </tbody>
+              </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
