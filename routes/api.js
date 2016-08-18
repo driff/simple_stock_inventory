@@ -1,5 +1,7 @@
 var express = require('express');
 var router = express.Router();
+var mongoose = require('mongoose');
+var Product = mongoose.model('Product');
 
 function isAuthenticated (req, res, next) {
     // if user is authenticated in the session, call the next() to call the next request handler
@@ -22,28 +24,73 @@ function isAuthenticated (req, res, next) {
 router.use('/products', isAuthenticated);
 
 router.route('/products')
-
+  //creates a new product
   .post(function(req, res){
-    res.send({message:"TODO create a new product in db"});
+    var product = new Product();
+    product.name = req.body.name;
+    product.details = req.body.details;
+    product.quantity = req.body.quantity;
+    product.raw_material = req.body.raw_material;
+    product.save(function(err, product){
+      if(err){
+        return res.send(500, err);
+      }
+      return res.json(product);
+    }); 
   })
 
+  //gets all products
   .get(function(req, res){
-    res.send({message:"TODO get all the products in the db"});
+    Product.find(function(err, products){
+      if(err){
+        return res.send(500, err);
+      }
+      return res.send(200, products);
+    });
   });
 
 router.route('/products/:id')
 
-  //create
+  //updates specified product
   .put(function(req, res){
-    return res.send({message:'TODO Modify existing product by using param '+req.param.id});
+    Product.findById(req.params.id, function(err, product){
+      if(err){
+        res.send(err);
+      }
+      product.name = req.body.name;
+      product.details = req.body.details;
+      product.quantity = req.body.quantity;
+      product.raw_material = req.body.raw_material;
+      product.last_updated = Date.now();
+      product.save(function(err, product){
+        if(err){
+          res.send(err);
+        }
+        res.json(product);
+      });
+    });
   })
 
+  //gets specified product
   .get(function(req, res){
-    return res.send({message:'TODO get an existing product by using id param '+req.param.id});
+    Product.findById(req.params.id, function(err, product){
+      if(err){
+        res.send(err);
+      }
+      res.json(product);
+    });
   })
 
+  //delets the product
   .delete(function(req, res){
-    return res.send({message:'TODO delete an existing product with the id '+req.param.id});
+    Product.remove({
+      _id: req.params.id
+    }, function(err){
+      if(err){
+        res.send(err);
+      }
+      res.json("deleted!");
+    });
   });
 
 

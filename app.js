@@ -6,11 +6,14 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var session = require('express-session');
 var passport = require('passport');
-
-
+//mongoose schema initialization
+require('./models/signing');
+require('./models/product');
+var index = require('./routes/index');
 var api = require('./routes/api');
 var auth = require('./routes/authenticate')(passport);
-
+var mongoose = require('mongoose');
+mongoose.connect('mongodb://localhost/ssi_dev');
 var app = express();
 
 // view engine setup
@@ -33,12 +36,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(passport.initialize());
 app.use(passport.session());
 
-//// Initialize Passport
-var initPassport = require('./passport-init');
-initPassport(passport);
-
-app.use('/api', api);
+app.use('/', index);
 app.use('/auth', auth);
+app.use('/api', api);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -46,6 +46,10 @@ app.use(function(req, res, next) {
   err.status = 404;
   next(err);
 });
+
+//// Initialize Passport
+var initPassport = require('./passport-init');
+initPassport(passport);
 
 // error handlers
 

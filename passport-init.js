@@ -1,40 +1,48 @@
+var mongoose = require('mongoose');
+var User = mongoose.model('User');
 var LocalStrategy   = require('passport-local').Strategy;
 var bCrypt = require('bcrypt-nodejs');
-//temporary data store
-var users = {};
+
 module.exports = function(passport){
 
     // Passport needs to be able to serialize and deserialize users to support persistent login sessions
     passport.serializeUser(function(user, done) {
-    console.log('serializing user:',user.username);
-    //return the unique id for the user
-    done(null, user.username);
-});
+        console.log('serializing user:',user.username);
+        //return the unique id for the user
+        done(null, user._id);
+    });
 
-//Desieralize user will call with the unique id provided by serializeuser
-passport.deserializeUser(function(username, done) {
+    //Desieralize user will call with the unique id provided by serializeuser
+    passport.deserializeUser(function(id, done) {
+        User.findById(id, function(err, user){
+            console.log('deserializing user:', user.username);
+            done(err, user);
+        });
+    });
 
-    return done(null, users[username]);
-
-});
     passport.use('login', new LocalStrategy({
             passReqToCallback : true
         },
         function(req, username, password, done) {
 
-            if(!users[username]){
-                console.log('User Not Found with username '+username);
-                return done(null, false);
-            }
+            User.findOne({'username': username}, function(err, user){
+                if(err){ 
+                    return done(err);
+                }
+                //check if user exists
+                if(!user){
+                    console.log('User not found with username '+username);
+                    return done(null, false);
+                }
+                //check if password is correct
+                if(!isValidPassword(user, password)){
+                    console.log('Ivalid user or password')
+                    return done(null, false);//redirect back to login page
+                }
 
-            if(isValidPassword(users[username], password)){
-                //sucessfully authenticated
-                return done(null, users[username]);
-            }
-            else{
-                console.log('Invalid password '+username);
-                return done(null, false)
-            }
+                //if here, everything matches
+                return done(null, user);
+            });
         }
     ));
 
@@ -43,19 +51,30 @@ passport.deserializeUser(function(username, done) {
         },
         function(req, username, password, done) {
 
-            if (users[username]){
-                console.log('User already exists with username: ' + username);
-                return done(null, false);
-            }
+            User.findOne({'username' : username}, function(err, user){
+                if(err){
+                    console.log('Error Signing up: '+err);
+                    return done(err);
+                }
 
-            //store user in memory
-            users[username] = {
-                username: username,
-                password: createHash(password)
-            }
-
-            console.log(users[username].username + ' Registration successful');
-            return done(null, users[username]);
+                //check if user already exists
+                if(user){
+                    console.log('Username already taken : '+username);
+                    return done(null, false);
+                }else{
+                    var newUser = new User();
+                    newUser.username = username;
+                    newUser.password = createHash(password);
+                    newUser.save(function(err){
+                        if(err){
+                            console.log('Error saving user: '+err);
+                            throw err;
+                        }
+                        console.log(newUser.username + 'registered successfully');
+                        return done(null, newUser);
+                    });
+                }
+            });
         })
     );
 
