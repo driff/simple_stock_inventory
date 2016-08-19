@@ -37,6 +37,7 @@ a {
 }
 
 .products-table {
+	width: 90%;
 	margin: 10px 10px 10px 10px;
 	background-color: #F7F7F7;
 	border-radius: 12px;
@@ -52,7 +53,8 @@ a {
 
 td{
 	text-align: center;
-  padding: 5px;
+	border: 1px solid #b1dbff;
+  	padding: 5px;
 }
 
 th{
